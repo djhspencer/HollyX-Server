@@ -177,7 +177,7 @@ router.post("/rsvp", authorizeUser, async (req, res) => {
         await eventt.save()
         
       }
-      console.log(eventt)
+      //console.log(eventt)
       res.status(200).json({ message: "Event Sucessfully Declined" });
     }
   } catch (err) {
