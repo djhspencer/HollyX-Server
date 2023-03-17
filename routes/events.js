@@ -20,13 +20,14 @@ router.get("/", async (req, res) => {
 //get all events
 router.post("/getOne", authorizeUser, async (req, res) => {
 
-  console.log(res.userInfo)
+  //console.log(res.userInfo)
 
   console.log("HELLO HI")
   try {
-    const eventt = await Event.find({ _id: req.body._id}).populate("owner");
-    console.log(eventt)
-    res.json([eventt, res.userInfo.email]);
+    const eventt = await Event.find({ _id: req.body._id}).populate("owner").populate("participants").populate("declined");
+    //console.log(eventt)
+    const user = await User.findOne( {email: res.userInfo.email})
+    res.json([eventt, user]);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -100,7 +101,7 @@ router.post("/create", authorizeUser, async (req, res) => {
         budget: req.body.budget,
         eventDate: req.body.eventDate,
         owner: user._id,
-        participants: [user.email],
+        participants: [user._id],
         invitedList: [user.email]
       });
 
@@ -142,36 +143,41 @@ router.post("/rsvp", authorizeUser, async (req, res) => {
       user.eventList.push(eventId)
       await user.save()
     }
+
+    console.log("LETS BEGIN")
     
 
     if (rsvp == "1") { // YES to event
-      if (eventt.declined.includes(userEmail)) {
-        const newList = eventt.declined.filter((name) => {
-          return name !== userEmail;
+      if (eventt.declined.includes(user._id)) {
+        console.log(eventt.declined)
+        const newList = eventt.declined.filter((id) => {
+          return id.toString() !== user._id.toString();
         });
+        console.log("removeddd")
         eventt.declined = newList;
+        console.log(newList)
         await eventt.save()
       }
-      if (!(eventt.participants.includes(userEmail))) {
-        eventt.participants.push(userEmail);
+      if (!(eventt.participants.includes(user._id))) {
+        eventt.participants.push(user._id);
         await eventt.save()
       }
       res.status(200).json({ message: "Event Sucessfully Joined" });
     } else { // NO to event
-      if (eventt.participants.includes(userEmail)) {
-
-        const newList = eventt.participants.filter((e) => {
-          return e !== userEmail;
+      if (eventt.participants.includes(user._id)) {
+        const newList = eventt.participants.filter((id) => {
+          return id.toString() !== user._id.toString();
         });
 
         eventt.participants = newList;
         await eventt.save()
       }
-      if (!(eventt.declined.includes(userEmail))) {
-        eventt.declined.push(userEmail);
+      if (!(eventt.declined.includes(user._id))) {
+        eventt.declined.push(user._id);
         await eventt.save()
         
       }
+      console.log(eventt)
       res.status(200).json({ message: "Event Sucessfully Declined" });
     }
   } catch (err) {

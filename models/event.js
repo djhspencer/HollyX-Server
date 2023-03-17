@@ -34,12 +34,14 @@ const eventSchema = new mongoose.Schema({
     default: []  
   },
   participants: {
-    type: [String],
+    type: [mongoose.SchemaTypes.ObjectId],
+    ref: "User",
     required: true,
     default: []  
   },
   declined: {
-    type: [String],
+    type: [mongoose.SchemaTypes.ObjectId],
+    ref: "User",
     required: true,
     default: []  
   }
