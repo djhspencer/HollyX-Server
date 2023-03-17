@@ -24,7 +24,7 @@ router.post("/getOne", authorizeUser, async (req, res) => {
 
   console.log("HELLO HI")
   try {
-    const eventt = await Event.find({ _id: req.body._id});
+    const eventt = await Event.find({ _id: req.body._id}).populate("owner");
     console.log(eventt)
     res.json([eventt, res.userInfo.email]);
   } catch (err) {
@@ -99,7 +99,7 @@ router.post("/create", authorizeUser, async (req, res) => {
         address: req.body.address,
         budget: req.body.budget,
         eventDate: req.body.eventDate,
-        owner: user.email,
+        owner: user._id,
         participants: [user.email],
         invitedList: [user.email]
       });
@@ -191,10 +191,13 @@ router.get("/userEvents", authorizeUser, async (req, res) => {
         return res.status(404).json({ message: "Not valid" });
       }
 
-      //const userEventsList = user.eventList
       const eventss = await Event.find({
         _id: { $in: user.eventList },
-      });
+      }).populate("owner");
+
+      //const userEventsList = user.eventList
+      // const eventss = await Event.where("address").equals("wert").populate("owner");
+      console.log(eventss);
       res.status(200).json(eventss);
     }
   } catch (err) {
